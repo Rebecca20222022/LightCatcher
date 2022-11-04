@@ -1,0 +1,142 @@
+#define PIN        6
+#include <Adafruit_NeoPixel.h>    //include the library for the LED strip
+
+#include <Wire.h> //for the lcd screen
+#include <LiquidCrystal_I2C.h> //for the lcd screen
+
+LiquidCrystal_I2C lcd(0x27, 16, 2); // set the LCD address to 0x27 for a 16 chars and 2 line display
+
+
+#define NUMPIXELS 60   //
+
+
+
+
+Adafruit_NeoPixel strip(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+//Adafruit_NeoPixel pixels(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
+
+#define DELAYVAL 25 // Time (in milliseconds) to pause between pixels
+int counter = 0;
+long last_micros = 0;
+volatile int i = 0;
+volatile int break_it = false;
+volatile int runLoop = true;
+volatile int player1 = true;
+volatile int player2 = false;
+volatile int player1score = "N/A";
+volatile int player2score = "N/A";
+volatile int r1; //r of the moving dot's color
+volatile int g1; //g of the moving dot's color
+volatile int b1; //b of the moving dot's color
+void setup() {
+
+
+  Serial.begin (9600);
+  strip.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
+  attachInterrupt(0, pressed, RISING);// set up "pressed" interrupt
+
+
+  //  lcd.init();
+  lcd.init();// initialize the lcd
+  lcd.backlight(); //set the background light to on
+  lcd.setCursor(3, 0); //set the cursor to the first line
+  lcd.print("start game ");// Print a message to the LCD.
+  lcd.setCursor(1, 1); //set the cursor to the first line
+  lcd.print("press to stop");// Print message to LCD
+
+}
+
+void pressed() {
+   if ((micros() - last_micros) >= 250000)
+  {
+    counter = counter + 1;
+    last_micros = micros ();
+  }
+  break_it = true;
+}
+
+void loop() {
+  strip.clear(); // Set all pixel colors to 'off'
+
+  for (int i = 0; i < NUMPIXELS && runLoop == true; i++) { // pixel that moves through the led strip
+    if (player1 == true) { //Switch between player 1 and 2, changing the color of the moving light from purple to blue
+      r1 = 255;
+      g1 = 0;
+      b1 = 255;
+
+    }
+    else if (player2 == true) { //Switch between player 2 and 1, changing the color of the moving light from blue to purple
+      r1 = 100;
+      g1 = 100;
+      b1 = 100;
+    }
+    for (int i = 0; i < 25; i++) { // turn pixels 0 - 25 to red
+      strip.setPixelColor(i, 255, 0, 0);
+    }
+    for (int i = 25; i < 40; i++) { // turn pixels 26 - 40 to green
+      strip.setPixelColor(i, 0, 255, 0);
+    }
+    for (int i = 40;  i < 50; i++) { // turn pixels 41 - 50 to yellow
+      strip.setPixelColor(i, 150, 105, 0);
+    }
+    for (int i = 50;  i < 56; i++) { // turn pixels 51 - 56 to blue
+      strip.setPixelColor(i, 0, 100, 100);
+    }
+    for (int i = 56;  i < 59; i++) { // turn pixels 57 - 59 to orange
+      strip.setPixelColor(i, 200, 50, 0);
+    }
+    for (int i = 59;  i < 60; i++) { // turn pixels 57 - 59 to orange
+      strip.setPixelColor(i, 200, 0, 0);
+    }
+
+
+
+    if (break_it == true) {
+      runLoop = false;
+      lcd.backlight(); //set the background light to on
+      if (player1 == true) {
+        lcd.setCursor(0, 0); //set the cursor to the first line
+        lcd.print("               ");// Print a message to the LCD.
+        lcd.setCursor(2, 0); //set the cursor to the first line
+        lcd.print("P1 score: ");// Print a message to the LCD.
+        lcd.setCursor(12 , 0); //set the curser to the first line
+        lcd.print(i);// Print message to LCD
+      }
+      else if (player2 == true) {
+        lcd.setCursor(0, 1); //set the cursor to the first line
+        lcd.print("               ");// Print a message to the LCD.
+        lcd.setCursor(2, 1); //set the cursor to the first line
+        lcd.print("P2 score: ");// Print a message to the LCD.
+        lcd.setCursor(12 , 1); //set the curser to the first line
+        lcd.print(i);// Print message to LCD
+      }
+
+
+     
+      if (player1 == true) {
+        player2 = true;
+        player1 = false;
+
+      }
+      else if (player2 == true) {
+        player1 = true;
+        player2 = false;
+
+      }
+       i = 0;
+      runLoop = true;
+      break_it = false;
+    }
+
+    if (break_it == false) {   //if the button is pressed
+      runLoop = true;
+      strip.setPixelColor(i, strip.Color(255, 0, 255));
+      strip.show();   // Send the updated pixel colors to the hardware
+      delay(DELAYVAL / 8); // Pause before next pass through loop
+      strip.setPixelColor(i , strip.Color(r1, g1, b1)); //determines the moving pixel's color
+    }
+
+    strip.show(); //
+    delay(DELAYVAL); // Pause before next pass through loop
+  }
+}
