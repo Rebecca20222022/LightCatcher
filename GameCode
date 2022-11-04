@@ -99,7 +99,7 @@ void loop() {
         lcd.print("               ");// Print a message to the LCD.
         lcd.setCursor(2, 0); //set the cursor to the first line
         lcd.print("P1 score: ");// Print a message to the LCD.
-        lcd.setCursor(12 , 0); //set the curser to the first line
+        lcd.setCursor(12 , 0); //set the cursor to the first line
         lcd.print(i);// Print message to LCD
       }
       else if (player2 == true) {
@@ -107,7 +107,7 @@ void loop() {
         lcd.print("               ");// Print a message to the LCD.
         lcd.setCursor(2, 1); //set the cursor to the first line
         lcd.print("P2 score: ");// Print a message to the LCD.
-        lcd.setCursor(12 , 1); //set the curser to the first line
+        lcd.setCursor(12 , 1); //set the cursor to the first line
         lcd.print(i);// Print message to LCD
       }
 
